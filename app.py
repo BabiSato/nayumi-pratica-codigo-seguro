@@ -60,8 +60,10 @@ def criar_produto():
     conn = get_db()
     cursor = conn.cursor()
 
-    query = f"INSERT INTO produtos (nome, preco) VALUES ('{nome}', {preco})"
-    cursor.execute(query)
+    cursor.execute(
+    "INSERT INTO produtos (nome, preco) VALUES (?, ?)",
+    (nome, preco)
+    )
 
     conn.commit()
     conn.close()
@@ -104,12 +106,14 @@ def atualizar_produto(produto_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    query = (
-        f"UPDATE produtos "
-        f"SET nome = '{nome}', preco = {preco} "
-        f"WHERE id = {produto_id}"
+    cursor.execute(
+    """
+    UPDATE produtos
+    SET nome = ?, preco = ?
+    WHERE id = ?
+    """,
+    (nome, preco, produto_id)
     )
-    cursor.execute(query)
 
     conn.commit()
     conn.close()
@@ -125,8 +129,10 @@ def remover_produto(produto_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    query = f"DELETE FROM produtos WHERE id = {produto_id}"
-    cursor.execute(query)
+    cursor.execute(
+    "DELETE FROM produtos WHERE id = ?",
+    (produto_id,)
+    )
 
     conn.commit()
     conn.close()
