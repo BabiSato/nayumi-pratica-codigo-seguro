@@ -1,14 +1,17 @@
 from flask import Flask, request, jsonify
 import sqlite3
-import hashlib
+import os
+from dotenv import load_dotenv
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 
 DATABASE = "catalogox.db"
 
-API_USER = "admin"
-API_PASSWORD_HASH = hashlib.md5("admin123".encode()).hexdigest()
+load_dotenv()
 
+API_USER = os.getenv("API_USER")
+API_PASSWORD_HASH = os.getenv("API_PASSWORD_HASH")
 
 def get_db():
     return sqlite3.connect(DATABASE)
@@ -30,15 +33,20 @@ def inicializar_banco():
 
 def autenticar():
     auth = request.headers.get("Authorization")
+
     if not auth:
         return False
+
     try:
         usuario, senha = auth.split(":")
-        senha_hash = hashlib.md5(senha.encode()).hexdigest()
-        return usuario == API_USER and senha_hash == API_PASSWORD_HASH
-    except:
-        return False
 
+        return (
+            usuario == API_USER and
+            check_password_hash(API_PASSWORD_HASH, senha)
+        )
+
+    except ValueError:
+        return False
 
 @app.route("/produtos", methods=["POST"])
 def criar_produto():
