@@ -13,6 +13,7 @@ load_dotenv()
 API_USER = os.getenv("API_USER")
 API_PASSWORD_HASH = os.getenv("API_PASSWORD_HASH")
 
+
 def get_db():
     return sqlite3.connect(DATABASE)
 
@@ -48,6 +49,7 @@ def autenticar():
     except ValueError:
         return False
 
+
 @app.route("/produtos", methods=["POST"])
 def criar_produto():
     if not autenticar():
@@ -57,12 +59,23 @@ def criar_produto():
     nome = data.get("nome")
     preco = data.get("preco")
 
+    if not nome or not isinstance(nome, str):
+        return jsonify({"erro": "Nome inválido"}), 400
+
+    try:
+        preco = float(preco)
+    except (ValueError, TypeError):
+        return jsonify({"erro": "Preço inválido"}), 400
+
+    if preco <= 0:
+        return jsonify({"erro": "Preço deve ser maior que zero"}), 400
+
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute(
-    "INSERT INTO produtos (nome, preco) VALUES (?, ?)",
-    (nome, preco)
+        "INSERT INTO produtos (nome, preco) VALUES (?, ?)",
+        (nome, preco)
     )
 
     conn.commit()
@@ -103,16 +116,27 @@ def atualizar_produto(produto_id):
     nome = data.get("nome")
     preco = data.get("preco")
 
+    if not nome or not isinstance(nome, str):
+        return jsonify({"erro": "Nome inválido"}), 400
+
+    try:
+        preco = float(preco)
+    except (ValueError, TypeError):
+        return jsonify({"erro": "Preço inválido"}), 400
+
+    if preco <= 0:
+        return jsonify({"erro": "Preço deve ser maior que zero"}), 400
+
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute(
-    """
-    UPDATE produtos
-    SET nome = ?, preco = ?
-    WHERE id = ?
-    """,
-    (nome, preco, produto_id)
+        """
+        UPDATE produtos
+        SET nome = ?, preco = ?
+        WHERE id = ?
+        """,
+        (nome, preco, produto_id)
     )
 
     conn.commit()
@@ -130,8 +154,8 @@ def remover_produto(produto_id):
     cursor = conn.cursor()
 
     cursor.execute(
-    "DELETE FROM produtos WHERE id = ?",
-    (produto_id,)
+        "DELETE FROM produtos WHERE id = ?",
+        (produto_id,)
     )
 
     conn.commit()
